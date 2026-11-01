@@ -1,0 +1,306 @@
+{
+  "info": {
+    "_postman_id": "7e2bdf42-1111-4e44-9f4d-4aab8c9c4004",
+    "name": "Spotify Web API — ЛР4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.spotify.com/v1"
+    },
+    {
+      "key": "trackId",
+      "value": "11dFghVXANMlKmJ8NB4b1k"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Поиск трека",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/search?q=Twenty%20One%20Pilots&type=track",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200)); pm.test('Есть tracks.items',()=>pm.expect(pm.response.json().tracks.items).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Поиск с пустым q",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/search?q=&type=track",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Запрос обработан API',()=>pm.expect([200,400]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Несуществующий трек в поиске",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/search?q=xyzqwerty123notarealtrack&type=track",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200)); pm.test('Пустой результат',()=>pm.expect(pm.response.json().tracks.items).to.be.an('array').that.is.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Получение трека",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/tracks/{{trackId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200)); pm.test('Контракт трека',()=>{let x=pm.response.json(); ['id','name','artists','album','duration_ms'].forEach(k=>pm.expect(x).to.have.property(k));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Неверный ID трека",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/tracks/invalid_track_id_123",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Неверный ID отклонён',()=>pm.expect([400,404]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. /me без токена",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/me",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401',()=>pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Невалидный токен",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/me",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "invalid-token",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401',()=>pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. DELETE /search",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/search",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Метод не выполняет поиск',()=>pm.expect([400,401,403,404,405]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Несуществующий endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/nonexistent_endpoint_lab4",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Endpoint не найден',()=>pm.expect([404,410]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Граничное значение limit=0",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/search?q=test&type=track&limit=0",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Граничный параметр обработан',()=>pm.expect([200,400]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
